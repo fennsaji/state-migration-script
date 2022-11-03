@@ -25,7 +25,7 @@ function generatedDids(didStore) {
             sufficients: 0,
             data: value.data,
         }
-        encodedValues[updated_key] = utils.encodeData(updated_value, "AccountInfoWithTripleRefCount");
+        encodedValues[updated_key] = utils.encodeData(updated_value, "AccountInfo");
     }
 
     for (const {key, value} of Object.values(didStore.dids)) {
@@ -33,9 +33,10 @@ function generatedDids(didStore) {
         let updated_value = [{
             Private: {
                 ...value[0],
-                metadata: utils.encodeData(value[0].metadata.padEnd(32, '\0'), 'DidMetadata'),
             }
         }, 0];
+        // value[1]
+        // Setting block number as 0
         encodedValues[updated_key] = utils.encodeData(updated_value, "(DIdentity, BlockNumber)");
     }
 
@@ -49,10 +50,15 @@ function generatedDids(didStore) {
         encodedValues[updated_key] = utils.encodeData(value, "Did");
     }
 
-    for (const {key, value} of Object.values(didStore.prevkeys)) {
-        let updated_key = key.replace(prevkeys_key, new_prevkeys_key);
-        encodedValues[updated_key] = utils.encodeData(value, "PrevKeysMap");
-    }
+    // THIS IS NOT NEEDED AS PREVIOUS KEYS IS BASED ON BLOCK NUMBER
+    // for (const {key, value} of Object.values(didStore.prevkeys)) {
+    //     let updated_key = key.replace(prevkeys_key, new_prevkeys_key);
+    //     let updated_value = [
+    //         value[0],
+    //         value[1],
+    //     ];
+    //     encodedValues[updated_key] = utils.encodeData(updated_value, "PrevKeysMap");
+    // }
 
     return encodedValues;
 }
