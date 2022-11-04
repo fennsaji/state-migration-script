@@ -1,6 +1,16 @@
 const {utils} = require("metamui-sdk");
 const {bnToHex} = require('@polkadot/util');
 
+let relay_vc_types = [
+    "TokenVC",
+    "GenericVC",
+];
+let tokenchain_vc_types = [
+    "SlashTokens",
+    "MintTokens",
+    "TokenTransferVC",
+];
+
 function generateVCs(vcStore) {
     let vcs_key = '0xadf7562815365fcd9a52b5bb27961ddd225a174d55e19c40ae90fdfb2e26e068';
     let lookup_key = '0xadf7562815365fcd9a52b5bb27961ddd891ad457bf4da54990fa84a2acb148a2';
@@ -16,30 +26,44 @@ function generateVCs(vcStore) {
 
     let encodedValues = {};
 
-    console.log(utils.decodeHex("0x3c9dc1c9f5a975e285d1bf7b35b361fa223db342fe4211d8ec856da41bc39f026469643a737369643a66616d6531323300000000000000000000000000000000046469643a737369643a737572796132303232000000000000000000000000000004c0f28a5b2d8bbcff73d12e46a9928866b59a02b719d1a6e141861d3f937b9558928e5eca43872fa267a74eb65189c739723a0b1e2fe86aa5953950e551cf10810001005465737420446f6c6c61722030310000e80300000000000000000000000000000254444f4e45000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", "VC"))
-
-    console.log(utils.decodeHex("0x5465737420446f6c6c61722030310000e80300000000000000000000000000000254444f4e45000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", "TokenVC"))
+    let relay_vc_ids = [];
 
     for (const {key, value} of Object.values(vcStore.vcs)) {
         if(key.startsWith(vcs_key)) {
-            let updated_key = key.replace(vcs_key, new_vcs_key);
-            let updated_value = {
-                ...value[0],
-                is_vc_active: value[1] == "Active",
+            if(relay_vc_types.includes(value[0].vc_type)) {
+                let vc_id = `${key.slice(key.length - 64)}`;
+                relay_vc_ids.push(vc_id);
+                let updated_key = key.replace(vcs_key, new_vcs_key);
+                let updated_value = {
+                    ...value[0],
+                    is_vc_active: value[1] == "Active",
+                }
+                encodedValues[updated_key] = utils.encodeData(updated_value, "VC<Hash>");
+                console.log(utils.decodeHex(encodedValues[updated_key], "VC<Hash>"));
             }
-            encodedValues[updated_key] = utils.encodeData(updated_value, "VC");
         }
     }
     for (const {key, value} of Object.values(vcStore.lookups)) {
         if(key.startsWith(lookup_key)) {
             let updated_key = key.replace(lookup_key, new_lookup_key);
-            encodedValues[updated_key] = utils.encodeData(value, "Vec<VCid>");
+            let updated_value = [];
+            for (const vc_id of value) {
+                if(relay_vc_ids.includes(vc_id.slice(2))) {
+                    updated_value.push(vc_id);
+                }
+            }
+            if (updated_value.length != 0 ) {
+                encodedValues[updated_key] = utils.encodeData(value, "Vec<VCid>");
+            }
         }
     }
     for (const {key, value} of Object.values(vcStore.rlookups)) {
+        let vc_id = `${key.slice(key.length - 64)}`;
         if(key.startsWith(rlookup_key)) {
-            let updated_key = key.replace(rlookup_key, new_rlookup_key);
-            encodedValues[updated_key] = utils.encodeData(value, "Did");
+            if(relay_vc_ids.includes(vc_id)) {
+                let updated_key = key.replace(rlookup_key, new_rlookup_key);
+                encodedValues[updated_key] = utils.encodeData(value, "Did");
+            }
         }
     }
     // THIS IS NOT NEEDED AS IT IS BASED ON BLOCK NUMBER
@@ -55,8 +79,11 @@ function generateVCs(vcStore) {
     // }
     for (const {key, value} of Object.values(vcStore.vcApproverList)) {
         if(key.startsWith(vcapprover_key)) {
-            let updated_key = key.replace(vcapprover_key, new_vcapprover_key);
-            encodedValues[updated_key] = utils.encodeData(value, "Vec<Did>");
+            let vc_id = `${key.slice(key.length - 64)}`;
+            if(relay_vc_ids.includes(vc_id)) {
+                let updated_key = key.replace(vcapprover_key, new_vcapprover_key);
+                encodedValues[updated_key] = utils.encodeData(value, "Vec<Did>");
+            }
         }
     }
 

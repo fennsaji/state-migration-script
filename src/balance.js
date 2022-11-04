@@ -25,7 +25,7 @@ function generateBalances(balanceStore) {
         }
     }
     if(balanceStore.totalIssuance.key == total_issuance_key) {
-        encodedValues[new_total_issuance_key] = bnToHex(balanceStore.totalIssuance.value, { isLe: true }).toString();
+        encodedValues[new_total_issuance_key] = bnToHex(balanceStore.totalIssuance.value, { isLe: true }).padEnd(34, "0");
     }
 
     return encodedValues;

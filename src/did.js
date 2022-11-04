@@ -23,7 +23,7 @@ function generatedDids(didStore) {
             consumers: value.refcount,
             providers: 1,
             sufficients: 0,
-            data: value.data,
+            data: utils.encodeData(value.data, "AccountData"),
         }
         encodedValues[updated_key] = utils.encodeData(updated_value, "AccountInfo");
     }
