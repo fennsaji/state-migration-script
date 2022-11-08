@@ -2,10 +2,13 @@ const {connection, config} = require("metamui-sdk");
 const balance = require("./src/balance");
 const did = require("./src/did");
 const vc = require("./src/vc");
+const token = require("./src/token");
 const council = require("./src/council");
 const validator_set = require("./src/validator_set");
 const fs = require('fs');
+
 const {insertStorage} = require('./src/helper');
+const { stringToHex } = require("@polkadot/util");
 
 async function generateRelaySpec() {
     let state = JSON.parse(fs.readFileSync('../store-decode/data/state.json'));
@@ -28,17 +31,17 @@ async function generateRelaySpec() {
     let finalData = {...balanceStore, ...didStore, ...vcStore, ...councilStore, ...validatorSetStore};
 
 
-    let api = await connection.buildConnectionByUrl('ws://localhost:9944');
+    // let api = await connection.buildConnectionByUrl('ws://localhost:9944');
 
-    let keyring = await config.initKeyring();
+    // let keyring = await config.initKeyring();
 
-    // Root Key pair
-    let sigKeypair = keyring.addFromUri('//Alice');
+    // // Root Key pair
+    // let sigKeypair = keyring.addFromUri('//Alice');
 
-    // Updates generated fork to running chain
-    await insertStorage(Object.entries(finalData), sigKeypair, api);
+    // // Updates generated fork to running chain
+    // await insertStorage(Object.entries(finalData), sigKeypair, api);
 
-    console.log("Updated");
+    // console.log("Updated");
 
 
     let specRaw = JSON.parse(fs.readFileSync('../metamui-core/chainspecs/chainSpecRaw.json'));
@@ -49,10 +52,74 @@ async function generateRelaySpec() {
 
     fs.writeFileSync('data/relayFork.json', JSON.stringify(finalData));
     fs.writeFileSync('data/updatedSpecRaw.json', JSON.stringify(specRaw));
+        
+    console.log('Completed Relay');
+}
+
+async function generateTokenchainSpec() {
+    let state = JSON.parse(fs.readFileSync('../store-decode/data/state.json'));
+
+    let tokenChains = [{
+        currencyCode: 'SGD',
+        currencyHex: '5347440000000000', /* SGD */
+        wsUrl: 'ws://localhost:8844',
+        root: '//Swn',
+        region: ':yidinji:'
+    },{
+        currencyCode: 'DGTK',
+        currencyHex: '4447544b00000000', /* SGD */
+        wsUrl: 'ws://localhost:8844',
+        root: '//Swn',
+        region: ':yidinji:'
+    }];
+
+    for ( const {currencyCode, currencyHex, wsUrl, root, region} of tokenChains) {
+    
+        let didStore = did.generateCacheDids(state.didStore, stringToHex(region).slice(2));
+        console.log("Did Store Updated");
+
+        let {encodedValues: tokenStore, ...tokenData} = token.generateToken(state.tokenStore, currencyHex);
+        console.log("Token Store Updated");
+
+        let vcStore = vc.generateTokenchainVC(state.vcStore, currencyHex);
+        console.log("VC Store Updated");
+
+        let finalData = {...didStore, ...tokenStore, ...vcStore};
+            
+        
+        // // Update running network
+        // let api = await connection.buildConnectionByUrl(wsUrl);
+        
+        // let keyring = await config.initKeyring();
+        
+        // // Root Key pair
+        // let sigKeypair = keyring.addFromUri(root);
+        
+        // // Updates generated fork to running chain
+        // await insertStorage(Object.entries(finalData), sigKeypair, api);
+        
+        // console.log("Updated");
+        
+        
+        let specRaw = JSON.parse(fs.readFileSync('../metamui-tokenchain/chainspecs/chainSpecRaw.json'));
+        
+        specRaw.name = tokenData.tokenName + ' Devnet';
+        specRaw.properties = tokenData.tokenProperties;
+        
+        for (const [key, value] of Object.entries(finalData)) {
+            specRaw.genesis.raw.top[key] = value;
+        }
+        
+        fs.writeFileSync(`data/${currencyCode}TokenChainFork.json`, JSON.stringify(finalData));
+        fs.writeFileSync(`data/${currencyCode}TokenSpecRaw.json`, JSON.stringify(specRaw));
+        
+        console.log('Completed Tokenchain');
+    }
 }
 
 function main() {
-    generateRelaySpec()
+    generateRelaySpec();
+    generateTokenchainSpec();
 }
 
 main();

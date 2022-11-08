@@ -63,6 +63,43 @@ function generatedDids(didStore) {
     return encodedValues;
 }
 
+function generateCacheDids(didStore, region) {
+    let publickey_key = '0x8c00ca9d36dbd8b4d8e6b787982148bce395ab58338d83d25270a3a12ce872f8';
+    let lookup_key = '0x8c00ca9d36dbd8b4d8e6b787982148bc891ad457bf4da54990fa84a2acb148a2';
+    let rlookup_key = '0x8c00ca9d36dbd8b4d8e6b787982148bcf65cb14646e631fff440382018b1bfe4';
+
+    let new_publickey_key = '0xbb7012e41dc42b430bcc87f281a9d773eca31a1013ee524604f00928c57f0e30';
+    let new_lookup_key = '0xbb7012e41dc42b430bcc87f281a9d773891ad457bf4da54990fa84a2acb148a2';
+    let new_rlookup_key = '0xbb7012e41dc42b430bcc87f281a9d773f65cb14646e631fff440382018b1bfe4';
+
+    let encodedValues = {};
+
+    for (const {key, value} of Object.values(didStore.lookups)) {
+        if (key.includes(region)) {
+            let updated_key = key.replace(lookup_key, new_lookup_key);
+            encodedValues[updated_key] = utils.encodeData(value, "AccountId");
+        }
+    }
+
+    for (const {key, value} of Object.values(didStore.rlookups)) {
+        if (value.includes(region)) {
+            let updated_key = key.replace(rlookup_key, new_rlookup_key);
+            encodedValues[updated_key] = utils.encodeData(value, "Did");
+        }
+    }
+
+    for (const {key, value} of Object.values(didStore.dids)) {
+        if (key.includes(region)) {
+            let updated_key = key.replace(publickey_key, new_publickey_key);
+            let updated_value = value[0].public_key;
+            encodedValues[updated_key] = utils.encodeData(updated_value, "PublicKey");
+        }
+    }
+
+    return encodedValues;
+}
+
 module.exports = {
     generatedDids,
+    generateCacheDids,
 }
