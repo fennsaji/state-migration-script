@@ -117,6 +117,7 @@ async function generateTokenchainSpec() {
     }
 }
 
+
 function main() {
     generateRelaySpec();
     generateTokenchainSpec();
