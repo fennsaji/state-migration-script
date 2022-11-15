@@ -44,14 +44,18 @@ async function generateRelaySpec() {
     // console.log("Updated");
 
 
-    let specRaw = JSON.parse(fs.readFileSync('../metamui-core/chainspecs/chainSpecRaw.json'));
+    // let specRaw = JSON.parse(fs.readFileSync('../metamui-core/chainspecs/chainSpecRaw.json'));
+    let specRaw = JSON.parse(fs.readFileSync('../metamui-core/chainspecs/testnet/specRaw.json'));
 
     for (const [key, value] of Object.entries(finalData)) {
         specRaw.genesis.raw.top[key] = value;
     }
 
-    fs.writeFileSync('data/relayFork.json', JSON.stringify(finalData));
-    fs.writeFileSync('data/updatedSpecRaw.json', JSON.stringify(specRaw));
+    // fs.writeFileSync('data/relayFork.json', JSON.stringify(finalData));
+    // fs.writeFileSync('data/updatedSpecRaw.json', JSON.stringify(specRaw));
+
+    fs.writeFileSync('data/testnet/relayFork.json', JSON.stringify(finalData));
+    fs.writeFileSync('data/testnet/updatedSpecRaw.json', JSON.stringify(specRaw));
         
     console.log('Completed Relay');
 }
@@ -101,7 +105,8 @@ async function generateTokenchainSpec() {
         // console.log("Updated");
         
         
-        let specRaw = JSON.parse(fs.readFileSync('../metamui-tokenchain/chainspecs/chainSpecRaw.json'));
+        // let specRaw = JSON.parse(fs.readFileSync('../metamui-tokenchain/chainspecs/chainSpecRaw.json'));
+        let specRaw = JSON.parse(fs.readFileSync('../metamui-tokenchain/chainspecs/testnet/specRaw.json'));
         
         specRaw.name = tokenData.tokenName + ' Devnet';
         specRaw.properties = tokenData.tokenProperties;
@@ -110,8 +115,11 @@ async function generateTokenchainSpec() {
             specRaw.genesis.raw.top[key] = value;
         }
         
-        fs.writeFileSync(`data/${currencyCode}TokenChainFork.json`, JSON.stringify(finalData));
-        fs.writeFileSync(`data/${currencyCode}TokenSpecRaw.json`, JSON.stringify(specRaw));
+        // fs.writeFileSync(`data/${currencyCode}TokenChainFork.json`, JSON.stringify(finalData));
+        // fs.writeFileSync(`data/${currencyCode}TokenSpecRaw.json`, JSON.stringify(specRaw));
+
+        fs.writeFileSync(`data/testnet/${currencyCode}TokenChainFork.json`, JSON.stringify(finalData));
+        fs.writeFileSync(`data/testnet/${currencyCode}TokenSpecRaw.json`, JSON.stringify(specRaw));
         
         console.log('Completed Tokenchain');
     }
