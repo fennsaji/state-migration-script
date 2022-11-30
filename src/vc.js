@@ -122,6 +122,24 @@ function generateTokenchainVC(vcStore, currency_code) {
 
     for (const {key, value} of Object.values(vcStore.vcs)) {
         if(key.startsWith(vcs_key)) {
+            if (value[0].vc_type == 'TokenVC' && value[0].vc_property.currency_code == `0x${currency_code}`) {
+                value[0].vc_property = utils.encodeData(value[0].vc_property, value[0].vc_type).padEnd((128 * 2)+2, '0');
+                let vc_id = `${key.slice(key.length - 64)}`;
+                parachain_vcid = vc_id;
+                token_vc_ids.push(vc_id);
+                let updated_key = key.replace(vcs_key, new_vcs_key);
+                let updated_value = {
+                    hash: value[0].hash,
+                    owner: value[0].owner,
+                    issuers: value[0].issuers,
+                    signatures: value[0].signatures,
+                    is_vc_used: value[0].is_vc_used,
+                    is_vc_active: value[1] == "Active",
+                    vc_type: value[0].vc_type,
+                    vc_property: value[0].vc_property,
+                }
+                encodedValues[updated_key] = utils.encodeData(updated_value, "VC");
+            }
             if(tokenchain_vc_types.includes(value[0].vc_type)) {
                 if (value[0].vc_property.currency_code != `0x${currency_code}`) {
                     continue;

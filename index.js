@@ -71,7 +71,7 @@ async function generateTokenchainSpec() {
         region: ':yidinji:'
     },{
         currencyCode: 'DGTK',
-        currencyHex: '4447544b00000000', /* SGD */
+        currencyHex: '4447544b00000000', /* DGTK */
         wsUrl: 'ws://localhost:8844',
         root: '//Swn',
         region: ':yidinji:'
