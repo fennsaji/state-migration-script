@@ -21,13 +21,15 @@ function generateToken(tokenStore, currency_code) {
         encodedValues: [],
         tokenProperties: {},
         tokenName:  '',
-        tokenIssuer: ''
+        tokenIssuer: '',
+        didsWithAccount: [],
     };
     for (const {key, value} of Object.values(tokenStore.accounts)) {
         let currency_code_key = key.slice(key.length - 16);
         if (currency_code_key == currency_code) {
             // let updated_key = key.replace(accounts_key, new_accounts_key);
             let did = '0x' + key.slice(key.length - 96, key.length - 32);
+            newTokenStore.didsWithAccount.push(did);
             // let currencyCode = '0x' + key.slice(key.length - 32);
             let updated_key = new_accounts_key + blake2AsHex(did, 128).slice(2) + did.slice(2);
             let updated_value = {
