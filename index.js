@@ -7,6 +7,8 @@ const council = require("./src/council");
 const validator_set = require("./src/validator_set");
 const fs = require('fs');
 
+const { stringToHex } = require("@polkadot/util");
+
 const yargs = require('yargs');
 
 const argv = yargs
@@ -40,7 +42,6 @@ switch(env) {
         throw new Error("Unknown Env. Supported Env: devnet/ protonet/ mainnet")
 }
 
-const { stringToHex } = require("@polkadot/util");
 
 async function generateRelaySpec(env='devnet') {
     let state = JSON.parse(fs.readFileSync(`../store-decode/data/${env}/state.json`));
