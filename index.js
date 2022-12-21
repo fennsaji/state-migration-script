@@ -129,6 +129,7 @@ async function generateTokenchainSpec() {
 function main() {
     generateRelaySpec();
     generateTokenchainSpec();
+    process.exit(0);
 }
 
 main();
