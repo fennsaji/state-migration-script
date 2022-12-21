@@ -7,11 +7,43 @@ const council = require("./src/council");
 const validator_set = require("./src/validator_set");
 const fs = require('fs');
 
-const {insertStorage} = require('./src/helper');
+const yargs = require('yargs');
+
+const argv = yargs
+    .command('deploy', 'Prepare for deployment', {
+        env: {
+            description: 'Environment (devnet / protonet / mainnet)',
+            alias: 'e',
+            type: 'string'
+        },
+    })
+    .help()
+    .alias('help', 'h').argv;
+
+let env = argv.env || argv.e;
+switch(env) {
+    case 'dev': 
+    case 'devnet': 
+    case 'testnet': 
+        env = 'devnet';
+        break;
+    case 'demo': 
+    case 'demonet': 
+    case 'protonet': 
+        env = 'protonet';
+        break;
+    case 'main': 
+    case 'mainnet': 
+        env = 'mainnet';
+        break;
+    default: 
+        throw new Error("Unknown Env. Supported Env: devnet/ protonet/ mainnet")
+}
+
 const { stringToHex } = require("@polkadot/util");
 
-async function generateRelaySpec() {
-    let state = JSON.parse(fs.readFileSync('../store-decode/data/state.json'));
+async function generateRelaySpec(env='devnet') {
+    let state = JSON.parse(fs.readFileSync(`../store-decode/data/${env}/state.json`));
     
     let balanceStore = balance.generateBalances(state.balanceStore);
     console.log("Balances Store Updated");
@@ -30,38 +62,20 @@ async function generateRelaySpec() {
     
     let finalData = {...balanceStore, ...didStore, ...vcStore, ...councilStore, ...validatorSetStore};
 
-
-    // let api = await connection.buildConnectionByUrl('ws://localhost:9944');
-
-    // let keyring = await config.initKeyring();
-
-    // // Root Key pair
-    // let sigKeypair = keyring.addFromUri('//Alice');
-
-    // // Updates generated fork to running chain
-    // await insertStorage(Object.entries(finalData), sigKeypair, api);
-
-    // console.log("Updated");
-
-
-    // let specRaw = JSON.parse(fs.readFileSync('../metamui-core/chainspecs/chainSpecRaw.json'));
-    let specRaw = JSON.parse(fs.readFileSync('../metamui-core/chainspecs/devnet/specRaw.json'));
+    let specRaw = JSON.parse(fs.readFileSync(`../metamui-core/chainspecs/${env}/specRaw.json`));
 
     for (const [key, value] of Object.entries(finalData)) {
         specRaw.genesis.raw.top[key] = value;
     }
 
-    // fs.writeFileSync('data/relayFork.json', JSON.stringify(finalData));
-    // fs.writeFileSync('data/updatedSpecRaw.json', JSON.stringify(specRaw));
-
-    fs.writeFileSync('data/devnet/relayFork.json', JSON.stringify(finalData));
-    fs.writeFileSync('data/devnet/updatedSpecRaw.json', JSON.stringify(specRaw));
+    fs.writeFileSync(`data/${env}/relayFork.json`, JSON.stringify(finalData));
+    fs.writeFileSync(`../metamui-core/chainspecs/${env}/updatedSpecRaw.json`, JSON.stringify(specRaw));
         
     console.log('Completed Relay');
 }
 
-async function generateTokenchainSpec() {
-    let state = JSON.parse(fs.readFileSync('../store-decode/data/state.json'));
+async function generateTokenchainSpec(env='devnet') {
+    let state = JSON.parse(fs.readFileSync(`../store-decode/data/${env}/state.json`));
 
     let tokenChains = [{
         currencyCode: 'SGD',
@@ -90,46 +104,27 @@ async function generateTokenchainSpec() {
 
         let finalData = {...didStore, ...tokenStore, ...vcStore};
             
+        let specRaw = JSON.parse(fs.readFileSync(`../metamui-tokenchain/chainspecs/${env}/specRaw.json`));
         
-        // // Update running network
-        // let api = await connection.buildConnectionByUrl(wsUrl);
-        
-        // let keyring = await config.initKeyring();
-        
-        // // Root Key pair
-        // let sigKeypair = keyring.addFromUri(root);
-        
-        // // Updates generated fork to running chain
-        // await insertStorage(Object.entries(finalData), sigKeypair, api);
-        
-        // console.log("Updated");
-        
-        
-        // let specRaw = JSON.parse(fs.readFileSync('../metamui-tokenchain/chainspecs/chainSpecRaw.json'));
-        let specRaw = JSON.parse(fs.readFileSync('../metamui-tokenchain/chainspecs/devnet/specRaw.json'));
-        
-        specRaw.name = tokenData.tokenName + ' Devnet';
+        specRaw.name = tokenData.tokenName + ` ${env}`;
         specRaw.properties = tokenData.tokenProperties;
         
         for (const [key, value] of Object.entries(finalData)) {
             specRaw.genesis.raw.top[key] = value;
         }
-        
-        // fs.writeFileSync(`data/${currencyCode}TokenChainFork.json`, JSON.stringify(finalData));
-        // fs.writeFileSync(`data/${currencyCode}TokenSpecRaw.json`, JSON.stringify(specRaw));
 
-        fs.writeFileSync(`data/devnet/${currencyCode}TokenChainFork.json`, JSON.stringify(finalData));
-        fs.writeFileSync(`data/devnet/${currencyCode}TokenSpecRaw.json`, JSON.stringify(specRaw));
+        fs.writeFileSync(`data/${env}/${currencyCode}Fork.json`, JSON.stringify(finalData));
+        fs.writeFileSync(`../metamui-tokenchain/chainspecs/${env}/${currencyCode}SpecRaw.json`, JSON.stringify(specRaw));
         
         console.log('Completed Tokenchain');
     }
 }
 
 
-function main() {
-    generateRelaySpec();
-    generateTokenchainSpec();
+function main(env) {
+    generateRelaySpec(env);
+    generateTokenchainSpec(env);
     process.exit(0);
 }
 
-main();
+main(env);

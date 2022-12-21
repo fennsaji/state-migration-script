@@ -13,10 +13,11 @@
   "author": "Fenn Saji",
   "license": "ISC",
   "dependencies": {
-    "metamui-sdk": "https://github.com/SovereignWallet-Network/metamui-sdk#main",
     "@polkadot/api": "^9.6.2",
     "@polkadot/types": "^9.6.2",
     "@polkadot/util": "^10.1.11",
-    "@polkadot/util-crypto": "^10.1.11"
+    "@polkadot/util-crypto": "^10.1.11",
+    "metamui-sdk": "https://github.com/SovereignWallet-Network/metamui-sdk#main",
+    "yargs": "^17.6.2"
   }
 }
