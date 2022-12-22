@@ -81,18 +81,10 @@ async function generateTokenchainSpec(env='devnet') {
     let tokenChains = [{
         currencyCode: 'SGD',
         currencyHex: '5347440000000000', /* SGD */
-        wsUrl: 'ws://localhost:8844',
-        root: '//Swn',
-        region: ':yidindji:'
-    },{
-        currencyCode: 'DGTK',
-        currencyHex: '4447544b00000000', /* DGTK */
-        wsUrl: 'ws://localhost:8844',
-        root: '//Swn',
         region: ':yidindji:'
     }];
 
-    for ( const {currencyCode, currencyHex, wsUrl, root, region} of tokenChains) {
+    for ( const {currencyCode, currencyHex, region} of tokenChains) {
 
         let {encodedValues: tokenStore, didsWithAccount, ...tokenData} = token.generateToken(state.tokenStore, currencyHex);
         console.log("Token Store Updated");
@@ -105,7 +97,7 @@ async function generateTokenchainSpec(env='devnet') {
 
         let finalData = {...didStore, ...tokenStore, ...vcStore};
             
-        let specRaw = JSON.parse(fs.readFileSync(`../metamui-tokenchain/chainspecs/${env}/specRaw.json`));
+        let specRaw = JSON.parse(fs.readFileSync(`../metamui-tokenchain/chainspecs/${env}/${currencyCode}/specRaw.json`));
         
         specRaw.name = tokenData.tokenName + ` ${env}`;
         specRaw.properties = tokenData.tokenProperties;
@@ -115,7 +107,7 @@ async function generateTokenchainSpec(env='devnet') {
         }
 
         fs.writeFileSync(`data/${env}/${currencyCode}Fork.json`, JSON.stringify(finalData));
-        fs.writeFileSync(`../metamui-tokenchain/chainspecs/${env}/${currencyCode}/specRaw.json`, JSON.stringify(specRaw));
+        fs.writeFileSync(`../metamui-tokenchain/chainspecs/${env}/${currencyCode}/updatedSpecRaw.json`, JSON.stringify(specRaw));
         
         console.log('Completed Tokenchain');
     }
