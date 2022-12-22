@@ -115,7 +115,7 @@ async function generateTokenchainSpec(env='devnet') {
         }
 
         fs.writeFileSync(`data/${env}/${currencyCode}Fork.json`, JSON.stringify(finalData));
-        fs.writeFileSync(`../metamui-tokenchain/chainspecs/${env}/${currencyCode}SpecRaw.json`, JSON.stringify(specRaw));
+        fs.writeFileSync(`../metamui-tokenchain/chainspecs/${env}/${currencyCode}/specRaw.json`, JSON.stringify(specRaw));
         
         console.log('Completed Tokenchain');
     }
